@@ -5,7 +5,7 @@ provider "aws" {
 # Create Instance
 
 resource "aws_instance" "app_server" {
-  ami             = var.ami
+  ami             = var.image_id
   instance_type   = var.instance_type
   subnet_id       = aws_subnet.public_subnet.id
   security_groups = ["${aws_security_group.moiz_web_sg.id}"]
@@ -55,7 +55,7 @@ resource "aws_internet_gateway" "test_igw" {
   vpc_id = aws_vpc.test_vpc.id
 
   tags = {
-    Name = "Some Internet Gateway"
+    Name = "Internet Gateway"
   }
 }
 
@@ -87,4 +87,34 @@ resource "aws_security_group" "moiz_web_sg" {
     protocol    = -1
     cidr_blocks = ["0.0.0.0/0"]
   }
+}
+
+
+
+
+
+# Route Tables
+
+resource "aws_route_table" "moiz_public_rt" {
+  vpc_id = aws_vpc.test_vpc.id
+
+  route {
+    cidr_block = "0.0.0.0/0"
+    gateway_id = aws_internet_gateway.test_igw.id
+  }
+
+  route {
+    ipv6_cidr_block = "::/0"
+    gateway_id      = aws_internet_gateway.test_igw.id
+  }
+
+  tags = {
+    Name = "Test Public Route Table"
+  }
+}
+
+
+resource "aws_route_table_association" "public_rt" {
+  subnet_id      = aws_subnet.public_subnet.id
+  route_table_id = aws_route_table.moiz_public_rt.id
 }
