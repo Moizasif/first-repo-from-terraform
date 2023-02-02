@@ -2,6 +2,21 @@ provider "aws" {
   region = var.region
 }
 
+# Create Instance
+
+resource "aws_instance" "app_server" {
+  ami             = var.ami
+  instance_type   = var.instance_type
+  subnet_id       = aws_subnet.public_subnet.id
+  security_groups = ["${aws_security_group.moiz_web_sg.id}"]
+
+  tags = {
+    Name = "VarTest"
+  }
+}
+
+
+
 # Create VPC
 
 resource "aws_vpc" "test_vpc" {
@@ -45,14 +60,31 @@ resource "aws_internet_gateway" "test_igw" {
 }
 
 
-# Create Instance
 
-resource "aws_instance" "app_server" {
-  ami           = var.ami
-  instance_type = var.instance_type
-  subnet_id     = aws_subnet.public_subnet.id
 
-  tags = {
-    Name = "VarTest"
+
+# Create Security Group
+
+resource "aws_security_group" "moiz_web_sg" {
+  name   = "HTTP and SSH"
+  vpc_id = aws_vpc.test_vpc.id
+
+  dynamic "ingress" {
+    for_each = var.i_ports
+    iterator = i_port
+    content {
+      description = "SSH HTTP, and HTTPS"
+      from_port   = i_port.value
+      to_port     = i_port.value
+      protocol    = "tcp"
+      cidr_blocks = ["0.0.0.0/0"]
+    }
+  }
+
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = -1
+    cidr_blocks = ["0.0.0.0/0"]
   }
 }
