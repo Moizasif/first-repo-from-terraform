@@ -131,8 +131,9 @@ resource "aws_db_instance" "test" {
   engine_version       = "5.7"
   instance_class       = "db.t2.micro"
   username             = "admin"
-  password             = "admin"
+  password             = "Admin123"
   db_subnet_group_name = aws_db_subnet_group.test-db-subnet.name
+  #final_snapshot_identifier= false
   # parameter_group_name = "default.mysql5.7"
 }
 
